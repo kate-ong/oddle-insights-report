@@ -40,8 +40,8 @@
   .slide.active { display: flex; }
 
   @media (max-width: 480px) {
-    .slide-container { aspect-ratio: auto; border-radius: 16px; overflow: visible; }
-    .slide { position: relative; inset: auto; padding: 28px 22px; border-radius: 16px; }
+    .slide-container { aspect-ratio: auto; border-radius: 16px; }
+    .slide { padding: 28px 22px; }
     .nav-btn { width: 40px; height: 40px; font-size: 16px; }
     .stat-grid, .split-grid { gap: 7px; }
     .stat-card { padding: 10px 11px; }
@@ -515,6 +515,24 @@
     if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
     if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   navigate(-1);
   });
+
+  function setMobileHeight() {
+    const cont = document.querySelector('.slide-container');
+    if (window.innerWidth > 480) { cont.style.height = ''; return; }
+    cont.style.height = 'auto';
+    let max = 0;
+    slides.forEach(s => {
+      s.style.position = 'relative';
+      s.style.display = 'flex';
+      max = Math.max(max, s.scrollHeight);
+      s.style.display = '';
+      s.style.position = '';
+    });
+    slides[current].classList.add('active');
+    cont.style.height = max + 'px';
+  }
+  setMobileHeight();
+  window.addEventListener('resize', setMobileHeight);
 
   let startX = 0;
   const container = document.querySelector('.slide-container');
