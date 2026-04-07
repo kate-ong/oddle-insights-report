@@ -1,0 +1,683 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex">
+<title>Abundance — Reserve Insights | March 2026</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --main:      #3d0099;
+    --secondary: #928CD9;
+    --tertiary:  #EDEBFD;
+    --dark:      #1a1a2e;
+    --black:     #111111;
+    --grey:      #555555;
+    --white:     #ffffff;
+    --red:       #c92a2a;
+    --red-bg:    #fff5f5;
+    --green:     #2b8a3e;
+    --green-bg:  #ebfbee;
+    --amber:     #e67700;
+    --amber-bg:  #fff9db;
+  }
+
+  body {
+    background: #e8e5f5;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    padding: 20px;
+  }
+
+  .carousel-wrap { display: flex; flex-direction: column; align-items: center; gap: 20px; width: 100%; max-width: 540px; }
+
+  .slide-container {
+    width: 100%; aspect-ratio: 1 / 1; position: relative;
+    border-radius: 20px; overflow: hidden;
+    box-shadow: 0 24px 60px rgba(61,0,153,0.25);
+  }
+
+  .slide { position: absolute; inset: 0; display: none; flex-direction: column; justify-content: space-between; padding: 32px 40px 28px; }
+  .slide.active { display: flex; }
+
+  @media (max-width: 480px) {
+    .slide-container { aspect-ratio: auto; border-radius: 16px; }
+    .slide { padding: 28px 22px; }
+    .nav-btn { width: 40px; height: 40px; font-size: 16px; }
+    .stat-grid { gap: 7px; }
+    .stat-card { padding: 10px 11px; }
+    .action-row { padding: 10px 11px; }
+    .big-num { font-size: clamp(48px, 12vw, 70px); }
+    .action-text { font-size: 12px; }
+    .action-text strong { font-size: 13px; }
+    body { padding: 12px; }
+    .carousel-wrap { gap: 16px; }
+    .dot { width: 6px; height: 6px; }
+    .dot.active { width: 20px; height: 6px; }
+    .dots { gap: 6px; min-height: 32px; align-items: center; }
+    .nav-row { gap: 12px; }
+    .hint { font-size: 10px; }
+  }
+
+  .slide-counter { font-size: 11px; font-weight: 700; letter-spacing: 2px; opacity: 0.4; }
+
+  .section-label { font-size: clamp(13px,3vw,16px); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: var(--main); margin-bottom: 12px; }
+  .section-label-light { font-size: clamp(13px,3vw,16px); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; color: rgba(255,255,255,0.6); margin-bottom: 12px; }
+
+  .slide-title { font-size: clamp(19px, 4.2vw, 26px); font-weight: 800; line-height: 1.2; }
+  .slide-sub   { font-size: clamp(11px, 2.4vw, 13px); line-height: 1.65; margin-top: 7px; opacity: 0.7; }
+  .big-num     { font-size: clamp(60px, 14vw, 90px); font-weight: 900; line-height: 1; letter-spacing: -3px; }
+  .divider     { width: 36px; height: 4px; border-radius: 99px; margin: 10px 0; }
+
+  .slide-footer { display: flex; align-items: center; justify-content: space-between; margin-top: 10px; }
+  .oddle-badge  { font-size: 9px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; opacity: 0.35; }
+
+  .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .stat-card { border-radius: 12px; padding: 12px 14px; display: flex; flex-direction: column; gap: 4px; }
+  .stat-num  { font-size: clamp(24px, 5.5vw, 32px); font-weight: 900; line-height: 1; }
+  .stat-lbl  { font-size: 10px; line-height: 1.35; opacity: 0.6; }
+
+  .action-list { display: flex; flex-direction: column; gap: 8px; }
+  .action-row  { display: flex; align-items: flex-start; gap: 11px; padding: 12px 13px; border-radius: 10px; }
+  .action-num  { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; flex-shrink: 0; margin-top: 1px; }
+  .action-text { font-size: 13px; font-weight: 500; line-height: 1.5; }
+  .action-text strong { font-weight: 800; display: block; font-size: 14px; margin-bottom: 3px; }
+
+  .funnel     { display: flex; flex-direction: column; gap: 7px; }
+  .funnel-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 13px; border-radius: 10px; }
+  .f-label    { font-size: 12px; font-weight: 600; }
+  .f-val      { font-size: 15px; font-weight: 900; }
+
+  /* Heatmap */
+  .hm { display: grid; grid-template-columns: 36px repeat(7,1fr); gap: 3px; font-size: 9px; }
+  .hm .hh { text-align: center; font-weight: 700; color: var(--grey); padding: 2px 0; font-size: 8px; }
+  .hm .rl { display: flex; align-items: center; font-weight: 700; color: var(--grey); font-size: 9px; }
+  .hm .c  { text-align: center; padding: 6px 2px; border-radius: 5px; font-weight: 700; font-size: 9px; }
+
+  /* Slide themes */
+  #s1 { background: var(--main); color: #fff; }
+  #s2 { background: var(--main); color: #fff; }
+  #s3 { background: var(--white); color: var(--black); }
+  #s4 { background: var(--red-bg); color: var(--black); }
+  #s5 { background: var(--white); color: var(--black); }
+  #s6 { background: var(--amber-bg); color: var(--black); }
+  #s7 { background: var(--tertiary); color: var(--black); }
+
+  .nav-row { display: flex; align-items: center; gap: 16px; }
+  .nav-btn { width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--main); color: #fff; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: opacity 0.2s; }
+  .nav-btn:hover { opacity: 0.8; }
+  .nav-btn:disabled { opacity: 0.2; cursor: default; }
+
+  .dots { display: flex; gap: 5px; align-items: center; }
+  .dot  { width: 5px; height: 5px; border-radius: 50%; background: var(--secondary); opacity: 0.4; transition: all 0.25s; cursor: pointer; padding: 0; min-height: 5px; }
+  .dot.active { background: var(--main); opacity: 1; width: 18px; border-radius: 3px; }
+
+  .hint { font-size: 11px; color: var(--secondary); letter-spacing: 1px; opacity: 0.6; }
+
+  /* Feedback widget */
+  .fb { display:flex; align-items:center; gap:5px; margin-top:4px; padding-top:4px; border-top:1px solid rgba(0,0,0,0.08); }
+  .fb-light { border-top-color: rgba(255,255,255,0.15); }
+  .fb-l { font-size:9px; opacity:0.5; }
+  .fb-btn { width:22px; height:22px; border-radius:6px; border:1.5px solid rgba(0,0,0,0.1); background:rgba(0,0,0,0.03); cursor:pointer; font-size:11px; display:inline-flex; align-items:center; justify-content:center; transition:all .15s; padding:0; }
+  .fb-btn:hover { background:rgba(0,0,0,0.06); }
+  .fb-btn.sel { border-color:var(--main); background:var(--tertiary); }
+  .fb-btn.sel.dn { border-color:var(--red); background:var(--red-bg); }
+  .fb-btn-light { border-color:rgba(255,255,255,0.2); background:rgba(255,255,255,0.08); }
+  .fb-btn-light:hover { background:rgba(255,255,255,0.15); }
+  .fb-btn-light.sel { border-color:rgba(255,255,255,0.5); background:rgba(255,255,255,0.15); }
+  .fb-btn-light.sel.dn { border-color:var(--red); background:rgba(201,42,42,0.2); }
+  .fb-box { display:none; margin-top:4px; }
+  .fb-box.vis { display:block; }
+  .fb-box textarea { width:100%; min-height:32px; border:1.5px solid rgba(0,0,0,0.1); border-radius:6px; padding:5px 8px; font-family:inherit; font-size:9px; color:var(--black); resize:vertical; outline:none; background:rgba(255,255,255,0.9); }
+  .fb-box textarea:focus { border-color:var(--main); }
+  .fb-box textarea::placeholder { color:var(--grey); opacity:0.5; }
+  .fb-box-light textarea { background:rgba(255,255,255,0.1); color:#fff; border-color:rgba(255,255,255,0.2); }
+  .fb-box-light textarea:focus { border-color:rgba(255,255,255,0.4); }
+  .fb-box-light textarea::placeholder { color:rgba(255,255,255,0.4); }
+
+  /* Password gate */
+  .pw-gate {
+    position: fixed; inset: 0; z-index: 999;
+    background: #e8e5f5;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pw-gate.hidden { display: none; }
+  .pw-box {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 40px 36px;
+    max-width: 380px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 24px 60px rgba(61,0,153,0.15);
+  }
+  .pw-box .pw-brand {
+    display: inline-block;
+    background: var(--main);
+    color: #fff;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 40px;
+    margin-bottom: 16px;
+  }
+  .pw-box h2 {
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--black);
+    margin-bottom: 6px;
+  }
+  .pw-box .pw-sub {
+    font-size: 12px;
+    color: var(--grey);
+    margin-bottom: 20px;
+  }
+  .pw-box input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid var(--tertiary);
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 14px;
+    color: var(--black);
+    outline: none;
+    text-align: center;
+    letter-spacing: 1px;
+    transition: border-color 0.2s;
+  }
+  .pw-box input:focus { border-color: var(--main); }
+  .pw-box input.pw-error { border-color: var(--red); animation: shake 0.4s ease; }
+  .pw-box button {
+    margin-top: 12px;
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    background: var(--main);
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .pw-box button:hover { opacity: 0.85; }
+  .pw-err-msg {
+    font-size: 11px;
+    color: var(--red);
+    margin-top: 8px;
+    min-height: 16px;
+  }
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+  }
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div class="pw-gate" id="pwGate">
+  <div class="pw-box">
+    <div class="pw-brand">Oddle Reserve</div>
+    <h2>Your March Report</h2>
+    <div class="pw-sub">Enter the password shared by your account manager.</div>
+    <input type="password" id="pwInput" placeholder="Password" autocomplete="off">
+    <button onclick="checkPw()">View Report</button>
+    <div class="pw-err-msg" id="pwErr"></div>
+  </div>
+</div>
+
+<div class="carousel-wrap" id="reportContent" style="display:none;">
+<div class="slide-container">
+
+  <!-- S1: COVER (fixed) -->
+  <div class="slide active" id="s1">
+    <div class="slide-counter" style="color:rgba(255,255,255,0.4);">01 / 07</div>
+    <div>
+      <div style="display:inline-block; background:rgba(255,255,255,0.15); color:#fff; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:5px 12px; border-radius:40px; margin-bottom:12px;">Abundance</div>
+      <div class="slide-title" style="font-size:clamp(22px,5.5vw,32px); color:#fff;">
+        Oddle Reserve —<br>March 2026 Insights
+      </div>
+      <div class="divider" style="background:rgba(255,255,255,0.35);"></div>
+      <div class="slide-sub" style="color:rgba(255,255,255,0.65);">Key findings from your Reserve data across Redhill, Jalan Besar, and Century Square.</div>
+    </div>
+    <div>
+      <div class="stat-grid" style="margin-bottom:14px;">
+        <div class="stat-card" style="background:rgba(255,255,255,0.1);">
+          <div class="stat-num" style="color:#fff;">1,590</div>
+          <div class="stat-lbl" style="color:rgba(255,255,255,0.5);">Completed bookings</div>
+        </div>
+        <div class="stat-card" style="background:rgba(255,255,255,0.1);">
+          <div class="stat-num" style="color:#fff;">4,993</div>
+          <div class="stat-lbl" style="color:rgba(255,255,255,0.5);">Total covers</div>
+        </div>
+        <div class="stat-card" style="background:rgba(255,255,255,0.1);">
+          <div class="stat-num" style="color:#fff;">12.5%</div>
+          <div class="stat-lbl" style="color:rgba(255,255,255,0.5);">Cancel rate</div>
+        </div>
+        <div class="stat-card" style="background:rgba(255,255,255,0.1);">
+          <div class="stat-num" style="color:#fff;">3</div>
+          <div class="stat-lbl" style="color:rgba(255,255,255,0.5);">Active outlets</div>
+        </div>
+      </div>
+      <div class="slide-footer">
+        <div class="oddle-badge" style="color:rgba(255,255,255,0.35);">Powered by Oddle Reserve</div>
+        <div style="font-size:11px;color:rgba(255,255,255,0.4);">Swipe &rarr;</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- S2: ACTION PLAN (fixed) -->
+  <div class="slide" id="s2">
+    <div class="slide-counter" style="color:rgba(255,255,255,0.4);">02 / 07</div>
+    <div>
+      <div class="section-label-light">Your action plan</div>
+      <div class="slide-title" style="color:#fff;">3 things to do<br>this month.</div>
+    </div>
+    <div>
+      <div class="action-list">
+        <div class="action-row" style="background:rgba(255,255,255,0.1);">
+          <div class="action-num" style="background:#fff; color:var(--dark);">1</div>
+          <div class="action-text" style="color:#fff;">
+            <strong style="color:#fff;">Fix the return loop.</strong>
+            Only 2.8% of first-timers come back. Send a return incentive within 7 days of visit.
+          </div>
+        </div>
+        <div class="action-row" style="background:rgba(255,255,255,0.1);">
+          <div class="action-num" style="background:#fff; color:var(--dark);">2</div>
+          <div class="action-text" style="color:#fff;">
+            <strong style="color:#fff;">Cross-sell to your diners.</strong>
+            5,226 dine-in customers never ordered on Shop. One email = ~104 orders at zero cost.
+          </div>
+        </div>
+        <div class="action-row" style="background:rgba(255,255,255,0.1);">
+          <div class="action-num" style="background:#fff; color:var(--dark);">3</div>
+          <div class="action-text" style="color:#fff;">
+            <strong style="color:#fff;">Make birthday tables visible.</strong>
+            40 birthday bookings at 4.5 pax avg. Put a birthday package on the booking page.
+          </div>
+        </div>
+      </div>
+      <div class="fb fb-light">
+        <span class="fb-l" style="color:rgba(255,255,255,0.5);">Useful?</span>
+        <button class="fb-btn fb-btn-light" data-s="s2" onclick="fb(this,'up')">&#128077;</button>
+        <button class="fb-btn fb-btn-light dn" data-s="s2" onclick="fb(this,'down')">&#128078;</button>
+      </div>
+      <div class="fb-box fb-box-light" id="fb-s2"><textarea placeholder="What could be better?"></textarea></div>
+    </div>
+  </div>
+
+  <!-- S3: PERFORMANCE + OUTLET HEALTH (fixed) -->
+  <div class="slide" id="s3">
+    <div class="slide-counter" style="color:var(--grey);">03 / 07</div>
+    <div>
+      <div class="section-label">This month's performance</div>
+      <div class="slide-title" style="color:var(--black);">Volume grew. But<br>cancellations are<br>creeping up.</div>
+    </div>
+    <div>
+      <div class="stat-grid" style="margin-bottom:10px;">
+        <div class="stat-card" style="background:var(--green-bg);">
+          <div class="stat-num" style="color:var(--green);">+16.5%</div>
+          <div class="stat-lbl" style="color:var(--green); opacity:0.8;">Bookings vs Feb</div>
+        </div>
+        <div class="stat-card" style="background:var(--red-bg);">
+          <div class="stat-num" style="color:var(--red);">12.5%</div>
+          <div class="stat-lbl" style="color:var(--red); opacity:0.8;">Cancel rate (+1.8pp)</div>
+        </div>
+      </div>
+      <div class="funnel" style="margin-bottom:8px;">
+        <div class="funnel-row" style="background:var(--tertiary); border-left:3px solid var(--red);">
+          <div>
+            <span class="f-label" style="color:var(--black);">Redhill</span>
+            <span style="font-size:9px; color:var(--grey);"> &middot; 648 &middot; Cancel 14.2%</span>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:10px; font-weight:700; color:var(--green);">+12.7%</span>
+            <span style="font-size:9px; color:var(--red); margin-left:6px;">-9.2% YoY</span>
+          </div>
+        </div>
+        <div class="funnel-row" style="background:var(--tertiary); border-left:3px solid var(--amber);">
+          <div>
+            <span class="f-label" style="color:var(--black);">Jalan Besar</span>
+            <span style="font-size:9px; color:var(--grey);"> &middot; 502 &middot; Cancel 12.7%</span>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:10px; font-weight:700; color:var(--green);">+26.8%</span>
+            <span style="font-size:9px; font-weight:700; color:var(--red); margin-left:6px;">-26.9% YoY</span>
+          </div>
+        </div>
+        <div class="funnel-row" style="background:var(--tertiary); border-left:3px solid var(--amber);">
+          <div>
+            <span class="f-label" style="color:var(--black);">Century Sq</span>
+            <span style="font-size:9px; color:var(--grey);"> &middot; 440 &middot; Cancel 9.8%</span>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:10px; font-weight:700; color:var(--green);">+11.7%</span>
+            <span style="font-size:9px; color:var(--red); margin-left:6px;">-17.9% YoY</span>
+          </div>
+        </div>
+      </div>
+      <div style="font-size:10px; color:var(--grey); line-height:1.5;">All three outlets grew MoM but are still down YoY. Redhill has the worst cancel rate, Century Square the weakest repeat rate.</div>
+      <div class="fb">
+        <span class="fb-l">Useful?</span>
+        <button class="fb-btn" data-s="s3" onclick="fb(this,'up')">&#128077;</button>
+        <button class="fb-btn dn" data-s="s3" onclick="fb(this,'down')">&#128078;</button>
+      </div>
+      <div class="fb-box" id="fb-s3"><textarea placeholder="What could be better?"></textarea></div>
+    </div>
+  </div>
+
+  <!-- S4: RETENTION BOTTLENECK (conditional) -->
+  <div class="slide" id="s4">
+    <div class="slide-counter" style="color:var(--grey);">04 / 07</div>
+    <div>
+      <div class="section-label" style="color:var(--red);">Core bottleneck</div>
+      <div class="big-num" style="color:var(--red);">2.8%</div>
+      <div class="slide-title" style="margin-top:6px; color:var(--black);">of first-timers came<br>back the following<br>month.</div>
+    </div>
+    <div>
+      <div style="display:flex; align-items:center; gap:10px; margin-bottom:12px;">
+        <div style="flex:1; background:var(--tertiary); border-radius:10px; padding:14px; text-align:center;">
+          <div style="font-size:28px; font-weight:900; color:var(--main); line-height:1;">907</div>
+          <div style="font-size:9px; color:var(--grey); margin-top:4px;">new customers<br>in Feb</div>
+        </div>
+        <div style="font-size:20px; font-weight:800; color:var(--secondary);">&rarr;</div>
+        <div style="flex:1; background:var(--red-bg); border-radius:10px; padding:14px; text-align:center;">
+          <div style="font-size:28px; font-weight:900; color:var(--red); line-height:1;">25</div>
+          <div style="font-size:9px; color:var(--grey); margin-top:4px;">came back<br>in Mar</div>
+        </div>
+      </div>
+      <div style="font-size:12px; color:var(--grey); line-height:1.6;">
+        <strong style="color:var(--black);">882 customers visited once and never returned.</strong> The average gap between visits is <strong style="color:var(--black);">285 days</strong>. Growth resets every month instead of compounding.
+      </div>
+      <div class="fb">
+        <span class="fb-l">Useful?</span>
+        <button class="fb-btn" data-s="s4" onclick="fb(this,'up')">&#128077;</button>
+        <button class="fb-btn dn" data-s="s4" onclick="fb(this,'down')">&#128078;</button>
+      </div>
+      <div class="fb-box" id="fb-s4"><textarea placeholder="What could be better?"></textarea></div>
+    </div>
+  </div>
+
+  <!-- S5: HIDDEN REVENUE (conditional) -->
+  <div class="slide" id="s5">
+    <div class="slide-counter" style="color:var(--grey);">05 / 07</div>
+    <div>
+      <div class="section-label" style="color:var(--main);">Hidden revenue</div>
+      <div class="big-num" style="color:var(--main);">97%</div>
+      <div class="slide-title" style="margin-top:6px; color:var(--black);">of dine-in customers<br>never ordered online.</div>
+    </div>
+    <div>
+      <div style="font-size:12px; color:var(--grey); line-height:1.6; margin:6px 0 10px;">You have <strong style="color:var(--black);">5,387 customers</strong> who've dined in via Reserve. Only <strong style="color:var(--black);">161</strong> of them have ever ordered on Oddle Shop. That leaves <strong style="color:var(--main);">5,226 customers</strong> who already know and like your food &mdash; but have never ordered online.</div>
+      <div style="margin:0 0 10px;">
+        <div style="display:flex; height:28px; border-radius:8px; overflow:hidden;">
+          <div style="width:97%; background:var(--main); display:flex; align-items:center; justify-content:center;">
+            <span style="font-size:10px; font-weight:800; color:#fff;">5,226 never ordered online</span>
+          </div>
+          <div style="width:3%; background:var(--secondary); min-width:4px;"></div>
+        </div>
+        <div style="display:flex; justify-content:space-between; font-size:9px; color:var(--grey); margin-top:3px;">
+          <span>5,387 total Reserve customers</span>
+          <span>161 also use Shop (3%)</span>
+        </div>
+      </div>
+      <div style="background:var(--tertiary); border-radius:10px; padding:11px 14px; text-align:center;">
+        <div style="font-size:13px; font-weight:700; color:var(--main);">Even at just 2% conversion: ~104 new Shop orders</div>
+        <div style="font-size:10px; color:var(--grey); margin-top:3px;">Zero acquisition cost &mdash; one targeted email with a first-order incentive.</div>
+      </div>
+      <div class="fb">
+        <span class="fb-l">Useful?</span>
+        <button class="fb-btn" data-s="s5" onclick="fb(this,'up')">&#128077;</button>
+        <button class="fb-btn dn" data-s="s5" onclick="fb(this,'down')">&#128078;</button>
+      </div>
+      <div class="fb-box" id="fb-s5"><textarea placeholder="What could be better?"></textarea></div>
+    </div>
+  </div>
+
+  <!-- S6: OCCASION OPPORTUNITY (conditional) -->
+  <div class="slide" id="s6">
+    <div class="slide-counter" style="color:var(--grey);">06 / 07</div>
+    <div>
+      <div class="section-label" style="color:var(--amber);">Most valuable segment</div>
+      <div class="big-num" style="color:var(--amber);">4.5</div>
+      <div class="slide-title" style="margin-top:4px; color:var(--black);">avg pax per birthday<br>booking. 45% larger<br>than casual tables.</div>
+    </div>
+    <div>
+      <div class="funnel" style="margin-bottom:10px;">
+        <div class="funnel-row" style="background:rgba(230,119,0,0.12);">
+          <div>
+            <span class="f-label" style="color:var(--black);">Birthday</span>
+            <span style="font-size:9px; color:var(--grey);"> &middot; 40 bookings</span>
+          </div>
+          <span class="f-val" style="color:var(--amber);">4.5 pax</span>
+        </div>
+        <div class="funnel-row" style="background:var(--tertiary);">
+          <div>
+            <span class="f-label" style="color:var(--black);">Business</span>
+            <span style="font-size:9px; color:var(--grey);"> &middot; 5 bookings</span>
+          </div>
+          <span class="f-val" style="color:var(--main);">5.7 pax</span>
+        </div>
+        <div class="funnel-row" style="background:var(--tertiary);">
+          <div>
+            <span class="f-label" style="color:var(--black);">Casual</span>
+            <span style="font-size:9px; color:var(--grey);"> &middot; 124 bookings</span>
+          </div>
+          <span class="f-val" style="color:var(--main);">3.1 pax</span>
+        </div>
+        <div class="funnel-row" style="background:var(--tertiary);">
+          <div>
+            <span class="f-label" style="color:var(--black);">Couple Date</span>
+            <span style="font-size:9px; color:var(--grey);"> &middot; 21 bookings</span>
+          </div>
+          <span class="f-val" style="color:var(--main);">2.0 pax</span>
+        </div>
+      </div>
+      <div style="font-size:11px; color:var(--grey); line-height:1.55;">Birthday tables bring the biggest parties. A visible birthday package on the booking page converts planners before they pick a competitor. Based on 13% of bookings with occasion tags.</div>
+      <div class="fb">
+        <span class="fb-l">Useful?</span>
+        <button class="fb-btn" data-s="s6" onclick="fb(this,'up')">&#128077;</button>
+        <button class="fb-btn dn" data-s="s6" onclick="fb(this,'down')">&#128078;</button>
+      </div>
+      <div class="fb-box" id="fb-s6"><textarea placeholder="What could be better?"></textarea></div>
+    </div>
+  </div>
+
+  <!-- S7: HEATMAP (fixed) -->
+  <div class="slide" id="s7">
+    <div class="slide-counter" style="color:var(--grey);">07 / 07</div>
+    <div>
+      <div class="section-label">When your customers visit</div>
+      <div class="slide-title" style="color:var(--black);">Sunday dinner is peak.<br>Midweek lunch is<br>the biggest gap.</div>
+    </div>
+    <div>
+      <div class="hm" style="margin-bottom:14px;">
+        <div class="hh"></div><div class="hh">Mon</div><div class="hh">Tue</div><div class="hh">Wed</div><div class="hh">Thu</div><div class="hh">Fri</div><div class="hh">Sat</div><div class="hh">Sun</div>
+        <div class="rl">Lunch</div>
+        <div class="c" style="background:#dbe4ff; color:var(--dark);">58</div>
+        <div class="c" style="background:#bac8ff; color:var(--dark);">70</div>
+        <div class="c" style="background:#ecedf2; color:var(--grey);">39</div>
+        <div class="c" style="background:#ecedf2; color:var(--grey);">43</div>
+        <div class="c" style="background:#bac8ff; color:var(--dark);">63</div>
+        <div class="c" style="background:#91a7ff; color:#fff;">107</div>
+        <div class="c" style="background:#5c7cfa; color:#fff;">150</div>
+        <div class="rl">Dinner</div>
+        <div class="c" style="background:#91a7ff; color:var(--dark);">103</div>
+        <div class="c" style="background:#5c7cfa; color:#fff;">146</div>
+        <div class="c" style="background:#91a7ff; color:var(--dark);">100</div>
+        <div class="c" style="background:#91a7ff; color:var(--dark);">100</div>
+        <div class="c" style="background:#5c7cfa; color:#fff;">155</div>
+        <div class="c" style="background:#4263eb; color:#fff;">166</div>
+        <div class="c" style="background:#364fc7; color:#fff;">175</div>
+      </div>
+      <div style="display:flex; gap:10px; margin-bottom:10px;">
+        <div style="flex:1; background:var(--white); border-radius:10px; padding:10px; text-align:center; border:1px solid rgba(0,0,0,0.06);">
+          <div style="font-size:22px; font-weight:900; color:var(--main); line-height:1;">175</div>
+          <div style="font-size:9px; color:var(--grey); margin-top:3px;">Sun dinner<br>(peak)</div>
+        </div>
+        <div style="flex:1; background:var(--white); border-radius:10px; padding:10px; text-align:center; border:1px solid rgba(0,0,0,0.06);">
+          <div style="font-size:22px; font-weight:900; color:var(--main); line-height:1;">166</div>
+          <div style="font-size:9px; color:var(--grey); margin-top:3px;">Sat dinner<br>(#2)</div>
+        </div>
+        <div style="flex:1; background:var(--red-bg); border-radius:10px; padding:10px; text-align:center;">
+          <div style="font-size:22px; font-weight:900; color:var(--red); line-height:1;">39</div>
+          <div style="font-size:9px; color:var(--grey); margin-top:3px;">Wed lunch<br>(weakest)</div>
+        </div>
+      </div>
+      <div style="font-size:10px; color:var(--grey); line-height:1.5;">Wed/Thu lunch averages ~41 covers vs ~129 on weekends. Jalan Besar has the most headroom (47% peak fill).</div>
+      <div class="fb">
+        <span class="fb-l">Useful?</span>
+        <button class="fb-btn" data-s="s7" onclick="fb(this,'up')">&#128077;</button>
+        <button class="fb-btn dn" data-s="s7" onclick="fb(this,'down')">&#128078;</button>
+      </div>
+      <div class="fb-box" id="fb-s7"><textarea placeholder="What could be better?"></textarea></div>
+    </div>
+  </div>
+
+</div><!-- /slide-container -->
+
+<div class="nav-row">
+  <button class="nav-btn" id="prevBtn" onclick="navigate(-1)" disabled>&#8592;</button>
+  <div class="dots" id="dots"></div>
+  <button class="nav-btn" id="nextBtn" onclick="navigate(1)">&#8594;</button>
+</div>
+<div class="hint">USE ARROW KEYS OR SWIPE TO NAVIGATE</div>
+</div><!-- /carousel-wrap -->
+
+<script>
+  // --- Password gate ---
+  var PW_HASH = 'ae1a108b3e15a61ff6b8d012057aab85f8084ab752929ef8140e2c8b72485a11';
+
+  async function sha256(str) {
+    var buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+    return Array.from(new Uint8Array(buf)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+  }
+
+  async function checkPw() {
+    var input = document.getElementById('pwInput');
+    var hash = await sha256(input.value);
+    if (hash === PW_HASH) {
+      document.getElementById('pwGate').classList.add('hidden');
+      document.getElementById('reportContent').style.display = '';
+      setMobileHeight();
+    } else {
+      input.classList.add('pw-error');
+      document.getElementById('pwErr').textContent = 'Incorrect password. Please try again.';
+      setTimeout(function() { input.classList.remove('pw-error'); }, 400);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('pwInput').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') checkPw();
+    });
+  });
+
+  const TOTAL = 7;
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+  const dotsContainer = document.getElementById('dots');
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+
+  for (let i = 0; i < TOTAL; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.onclick = () => goTo(i);
+    dotsContainer.appendChild(d);
+  }
+
+  function goTo(n) {
+    slides[current].classList.remove('active');
+    dotsContainer.children[current].classList.remove('active');
+    current = Math.max(0, Math.min(TOTAL - 1, n));
+    slides[current].classList.add('active');
+    dotsContainer.children[current].classList.add('active');
+    prevBtn.disabled = current === 0;
+    nextBtn.disabled = current === TOTAL - 1;
+  }
+
+  function navigate(dir) { goTo(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') navigate(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   navigate(-1);
+  });
+
+  function setMobileHeight() {
+    const cont = document.querySelector('.slide-container');
+    if (window.innerWidth > 480) { cont.style.height = ''; return; }
+    cont.style.height = 'auto';
+    let max = 0;
+    slides.forEach(s => {
+      s.style.position = 'relative';
+      s.style.display = 'flex';
+      max = Math.max(max, s.scrollHeight);
+      s.style.display = '';
+      s.style.position = '';
+    });
+    slides[current].classList.add('active');
+    cont.style.height = max + 'px';
+  }
+  setMobileHeight();
+  window.addEventListener('resize', setMobileHeight);
+
+  // --- Feedback storage (localStorage) ---
+  var FB_KEY = 'report_feedback_abundance_mar2026';
+
+  function getFeedbackStore() {
+    try { return JSON.parse(localStorage.getItem(FB_KEY)) || {}; } catch(e) { return {}; }
+  }
+
+  function saveFeedback(slide, vote, comment) {
+    var store = getFeedbackStore();
+    store[slide] = { vote: vote, comment: comment || '', ts: new Date().toISOString() };
+    localStorage.setItem(FB_KEY, JSON.stringify(store));
+  }
+
+  function fb(btn, type) {
+    var s = btn.getAttribute('data-s');
+    var w = btn.parentElement;
+    var btns = w.querySelectorAll('.fb-btn');
+    var box = document.getElementById('fb-' + s);
+
+    if (btn.classList.contains('sel')) {
+      btn.classList.remove('sel');
+      box.classList.remove('vis');
+      var store = getFeedbackStore(); delete store[s]; localStorage.setItem(FB_KEY, JSON.stringify(store));
+      return;
+    }
+    btns.forEach(function(b) { b.classList.remove('sel'); });
+    btn.classList.add('sel');
+    if (type === 'down') { box.classList.add('vis'); } else { box.classList.remove('vis'); }
+    saveFeedback(s, type, '');
+
+    var ta = box.querySelector('textarea');
+    if (ta && !ta._fbBound) {
+      ta._fbBound = true;
+      ta.addEventListener('blur', function() {
+        if (ta.value.trim()) saveFeedback(s, 'down', ta.value.trim());
+      });
+    }
+  }
+
+  let startX = 0;
+  const container = document.querySelector('.slide-container');
+  container.addEventListener('touchstart', e => { startX = e.touches[0].clientX; }, { passive: true });
+  container.addEventListener('touchmove', e => { e.preventDefault(); }, { passive: false });
+  container.addEventListener('touchend', e => {
+    const diff = startX - e.changedTouches[0].clientX;
+    if (Math.abs(diff) > 40) navigate(diff > 0 ? 1 : -1);
+  });
+</script>
+</body>
+</html>
